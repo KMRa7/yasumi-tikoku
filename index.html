@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>遅刻・休み申請フォーム</title>
+  <style>
+    body {
+      font-family: "Noto Sans JP", sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 480px;
+      padding: 20px;
+    }
+
+    h1 {
+      background: linear-gradient(135deg, #13ca5e, #0fa958);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px 10px 0 0;
+      margin: -20px -20px 20px -20px;
+      font-size: 22px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 10px 0 5px 0;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: #13ca5e;
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      font-size: 17px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background-color: #0fa958;
+    }
+
+    .required {
+      color: #fff;
+      background: #e53935;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 6px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>遅刻・休み申請フォーム</h1>
+
+    <label>氏名<span class="required">必須</span></label>
+    <input type="text" id="name" placeholder="例：山田太郎" required>
+
+    <label>所属部署・チーム<span class="required">必須</span></label>
+    <input type="text" id="team" placeholder="例：CSチーム・営業部" required>
+
+    <label>区分<span class="required">必須</span></label>
+    <div class="type-buttons">
+      <button type="button" class="type" onclick="selectType(this)">遅刻</button>
+      <button type="button" class="type" onclick="selectType(this)">休み（有給）</button>
+      <button type="button" class="type" onclick="selectType(this)">休み（無給）</button>
+      <button type="button" class="type" onclick="selectType(this)">体調不良</button>
+      <button type="button" class="type" onclick="selectType(this)">その他</button>
+    </div>
+
+    <label>対象日<span class="required">必須</span></label>
+    <input type="date" id="date" required>
+
+    <label>遅刻の場合：到着予定時刻</label>
+    <input type="time" id="time">
+
+    <label>理由（できるだけ具体的に）<span class="required">必須</span></label>
+    <textarea id="reason" rows="3" placeholder="例：発熱38℃／電車遅延／通院など" required></textarea>
+
+    <button onclick="submitForm()">送信</button>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <script>
+    let typeSelect = '';
+
+    // LIFF初期化
+    document.addEventListener('DOMContentLoaded', function() {
+      liff.init({ liffId: '【あなたのLIFF ID】' })
+      .then(() => console.log('LIFF初期化成功'))
+      .catch(err => console.error('LIFF初期化失敗', err));
+    });
+
+    // 区分選択
+    function selectType(element) {
+      const buttons = document.querySelectorAll('.type-buttons button');
+      buttons.forEach(b => b.classList.remove('active'));
+      element.classList.add('active');
+      element.style.background = '#444';
+      element.style.color = '#fff';
+      typeSelect = element.innerText;
+    }
+
+    // 送信処理
+    function submitForm() {
+      const name = document.getElementById('name').value.trim();
+      const team = document.getElementById('team').value.trim();
+      const date = document.getElementById('date').value;
+      const time = document.getElementById('time').value;
+      const reason = document.getElementById('reason').value.trim();
+
+      if (!name) return alert('氏名を入力してください。');
+      if (!team) return alert('所属部署を入力してください。');
+      if (!typeSelect) return alert('区分を選択してください。');
+      if (!date) return alert('対象日を選択してください。');
+      if (!reason) return alert('理由を入力してください。');
+
+      const message =
+        `📋【遅刻・休み申請】\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `👤 氏名：${name}\n` +
+        `🏢 部署：${team}\n` +
+        `📅 区分：${typeSelect}\n` +
+        `🗓 対象日：${date}\n` +
+        (time ? `⏰ 到着予定：${time}\n` : '') +
+        `💬 理由：${reason}\n` +
+        `━━━━━━━━━━━━━━━`;
+
+      liff.sendMessages([{ type: 'text', text: message }])
+        .then(() => {
+          alert('申請を送信しました。');
+          liff.closeWindow();
+        })
+        .catch(err => {
+          console.error('送信エラー', err);
+          alert('送信に失敗しました。');
+        });
+    }
+  </script>
+</body>
+</html>
