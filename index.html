@@ -102,6 +102,19 @@
       box-shadow: 0 2px 6px rgba(19,202,94,0.3);
     }
 
+    /* 注意メッセージ */
+    .notice {
+      display: none;
+      background-color: #fff8e1;
+      color: #444;
+      border-left: 5px solid #ffc107;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
     /* 送信ボタン */
     .submit-btn {
       width: 100%;
@@ -141,11 +154,12 @@
     <label>区分<span class="required">必須</span></label>
     <div class="type-buttons">
       <button type="button" class="type" onclick="selectType(this)">遅刻</button>
-      <button type="button" class="type" onclick="selectType(this)">休み（有給）</button>
-      <button type="button" class="type" onclick="selectType(this)">休み（無給）</button>
+      <button type="button" class="type" onclick="selectType(this)">休み</button>
       <button type="button" class="type" onclick="selectType(this)">体調不良</button>
       <button type="button" class="type" onclick="selectType(this)">その他</button>
     </div>
+
+    <div id="noticeBox" class="notice"></div>
 
     <label>対象日<span class="required">必須</span></label>
     <input type="date" id="date" required>
@@ -169,13 +183,26 @@
         .catch(err => console.error('LIFF初期化失敗', err));
     });
 
+    // 区分選択処理
     function selectType(element) {
       const buttons = document.querySelectorAll('.type-buttons button');
       buttons.forEach(b => b.classList.remove('active'));
       element.classList.add('active');
       typeSelect = element.innerText;
+
+      const notice = document.getElementById('noticeBox');
+      notice.style.display = 'none';
+
+      if (typeSelect === '体調不良') {
+        notice.innerHTML = '⚠️ 体調不良による欠勤の場合は、後日必ず診断書の提出をお願いいたします。';
+        notice.style.display = 'block';
+      } else if (typeSelect === '休み') {
+        notice.innerHTML = '⚠️ 通常の休み申請は当日申請不可です。<br>やむを得ない場合は、責任者に電話で連絡をしてください。';
+        notice.style.display = 'block';
+      }
     }
 
+    // 送信処理
     function submitForm() {
       const name = document.getElementById('name').value.trim();
       const team = document.getElementById('team').value.trim();
